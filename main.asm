@@ -7,8 +7,10 @@
 %define STD_IN 0
 %define STD_OUT 1
 %define MAX_CHOICE_LENGTH 1
+%define ARR_SIZE 10
 extern getUserMessage
 extern displayUserMessages
+extern malloc
 
 
 
@@ -46,7 +48,10 @@ extern displayUserMessages
         l6Len: equ $ - l6
 
 
-        message0: db "This is the original message.", NEW_LINE,0
+        orignalMessage: db "This is the original message.", NEW_LINE,0
+        orignalMessageLen: equ $ - orignalMessage
+
+        
 
 
 
@@ -56,6 +61,10 @@ section .bss
 
         ;reserve 10 indexes for the message
         messageArray: resb 10
+
+        ;keep track of how many insertions the user has made
+        ;ONCE THIS HITS 9, IT MUST BE RESET TO 0
+        insertionIndex: resd 8
         
 
 section .text
@@ -124,3 +133,7 @@ input:
         mov rdi, STD_IN                                 ;stdin syscall
         syscall                                         ;returns the number of bytes read
         ret                                             ;returns the value of the read into rax
+
+
+initializeMessageArray:
+    

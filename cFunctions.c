@@ -1,20 +1,54 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <malloc.h>
+#include <string.h>
+#include <ctype.h>
 
 // printout all string values from array of strings
-void displayUserMessages(char userMessages[], int size)
+void displayUserMessages(char *userMessages[])
 {
-    // fuck you
+    for (int i = 0; i < 10; i++)
+    {
+        printf("%s\n", userMessages[i]);
+    }
 }
 
 // use malloc to resize given char* array
-char *resizeArray(char *array, int newSize)
+char *resizeArray(char *array[], int newSize)
 {
     char *newArray = (char *)malloc(sizeof(char) * newSize);
     for (int i = 0; i < newSize; i++)
     {
-        newArray[i] = array[i];
+        newArray[i] = *array[i];
     }
     free(array);
     return newArray;
+}
+
+// get user input and store it in one of the arrays of strings
+void getUserInput(char *userMessages[], int insertionLocation)
+{
+    char Ending_Symbols[3] = {'.', '!', '?'};
+    char *userString[10000];
+    printf("Enter a new message: ");
+    scanf("%s", *userString);
+
+    // get the length of the string
+    int userMessageLength = strlen(*userString);
+
+    // check if the messages first letter is uppercase
+    if (!isupper(*userString[0]))
+    {
+        printf("First letter is not uppercase, Try again.\n");
+        return;
+    }
+    // check if the ending character is valid
+    else if (!strchr(Ending_Symbols, *userString[userMessageLength - 1]))
+    {
+        printf("Invalid ending character, Try again.\n");
+        return;
+    }
+    // the message is valid, place it in the given index
+
+    userMessages[insertionLocation] = *userString;
 }
