@@ -12,6 +12,19 @@ extern displayUserMessages
 
 
 
+;********************************************************************************************
+; Setup Array with all 10 original messages                                          *INCOMPLETE*
+; make those elements addressable                                                    *INCOMPLETE*
+; make arrays dynamically sized                                                      *INCOMPLETE*
+; make menu repeat until quit is chosen                                              *INCOMPLETE*
+; get user input for choice                                                          *INCOMPLETE*
+; create the c functions for the menu                                                *INCOMPLETE*
+; everything else                                                                    *INCOMPLETE*
+;********************************************************************************************
+
+
+
+
 
 
  section .data
