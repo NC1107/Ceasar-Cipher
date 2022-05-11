@@ -54,6 +54,9 @@ extern displayUserMessages
 section .bss
         menuChoice: resb 1
 
+        ;reserve 10 indexes for the message
+        messageArray: resb 10
+        
 
 section .text
         global main

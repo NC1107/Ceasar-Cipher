@@ -4,7 +4,7 @@
 // printout all string values from array of strings
 void displayUserMessages(char userMessages[], int size)
 {
-    printf("\n%s\n", userMessages);
+    // fuck you
 }
 
 // use malloc to resize given char* array
