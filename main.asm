@@ -8,22 +8,25 @@
 %define STD_OUT 1
 %define MAX_CHOICE_LENGTH 1
 %define ARR_SIZE 10
+extern getUserMessage
 extern displayUserMessages
 extern malloc
-extern resizeArray
-extern decryptString
-extern readUserMessage
+
 
 
 ;********************************************************************************************
 ; Setup Array with all 10 original messages                                          *INCOMPLETE*
 ; make those elements addressable                                                    *INCOMPLETE*
 ; make arrays dynamically sized                                                      *INCOMPLETE*
-; make menu repeat until quit is chosen                                              *COMPLETE*
-; get user input for choice                                                          *COMPLETE*
+; make menu repeat until quit is chosen                                              *INCOMPLETE*
+; get user input for choice                                                          *INCOMPLETE*
 ; create the c functions for the menu                                                *INCOMPLETE*
 ; everything else                                                                    *INCOMPLETE*
 ;********************************************************************************************
+
+
+
+
 
 
  section .data
@@ -44,57 +47,41 @@ extern readUserMessage
         l6: db "Enter your choice: "
         l6Len: equ $ - l6
 
+
         ; ending these messages with null terminator since they will be used in C functions
         orignalMessage: db "This is the original message.", NEW_LINE,0 ; 
         orignalMessageLen: equ $ - orignalMessage
         invalidOption: db "Invalid option! please try again!", NEW_LINE,0
         invalidOptionLen: equ $ - invalidOption
+        
+
+
+
 
 section .bss
         menuChoice: resb 1         ;holds user's choice, 1 char, [s,r,c,f,q]
         messageArray: resb 10      ;reserve 10 indexes for the message
-        insertionIndex: resd 8      ;keep track of how many insertions the user has made ONCE THIS HITS 9, IT MUST BE RESET TO 0 
+       insertionIndex: resd 8      ;keep track of how many insertions the user has made ONCE THIS HITS 9, IT MUST BE RESET TO 0 
          
 
 section .text
         global main
 
 
-main:   
+main:
+
         call printMenu
-        ;get user input menu choice
-        call getMenuChoice
-        mov al, byte[rsi]
-        cmp al, 's'                             ;printing the current meeages
-        je showMessage
-        cmp al, 'S'                             ;printing the current meeages
-        je showMessage
-        cmp al, 'r'                             ;read new meeages
-        je readMessage      
-        cmp al, 'R'                             ;read new meeages
-        je readMessage                        
-        cmp al, 'c'                             ;caesar cipher
-        je ceasarCypher
-        cmp al, 'C'                             ;caesar cipher
-        je ceasarCypher
-        cmp al, 'f'                             ;frequency decrypt    
-        je frequencyDecrypt
-        cmp al, 'F'                             ;frequency decrypt   
-        je frequencyDecrypt
-        cmp al, 'q'                             ;quit program
-        je exit
-        cmp al, 'Q'                             ;quit program
-        je exit
-        cmp al, 'z'                             ;extra credit
-        je extraCredit
-        
-        jmp invalidInput                        ;otherwise invalid input
-        
+
         ;testing printing the array of strings
-        ;call displayUserMessages
+
+        call displayUserMessages
+        
+        xor rax, rax
+        ret
 
 
-;prints the menu and leaves
+
+;prints the menu and leaves, can simplify this by storing in array and looping printout
 printMenu:
         mov rsi, l0
         mov rdx, l0Len
@@ -119,47 +106,18 @@ printMenu:
         call print
         ret
 
+
 ;skips input and just dips
 getMenuChoice:
-        mov rsi, menuChoice                               ;store the users shift value in the buffer
+        mov rsi, menuChoice                         ;store the users shift value in the buffer
         mov rdx, MAX_CHOICE_LENGTH                        ;store the max number of bytes the user can input
         call input    
         ;print user choice
-        ; mov rsi, menuChoice
-        ; mov rdx, MAX_CHOICE_LENGTH
-        ; call print
-        cmp byte[rsi], NEW_LINE
-        je getMenuChoice
+        mov rsi, menuChoice
+        mov rdx, MAX_CHOICE_LENGTH
+        call print
         ret
 
-showMessage:
-        ;mov rax, array
-        ;mov rsi, arraySize
-        ;call displayUserMessages
-        jmp main                        ;return to main
-
-readMessage:
-        ;mov rax, array
-        ;mov rsi, location
-        jmp main                        ;return to main
-
-ceasarCypher:
-        jmp main                        ;return to main
-
-frequencyDecrypt:
-        ;mov rax, array
-        ;call decryptString
-        jmp main                        ;return to main
-
-extraCredit:
-        jmp main                        ;return to main
-
-invalidInput:
-        mov rsi, invalidOption
-        mov rdx, invalidOptionLen
-        call print
-
-        jmp main                        ;return to main
 
 print:                                                  ;move prompt to rsi, length to rdx
         mov rax, SYSCALL_WRITE                          ;syscall number moved into rax for write function
@@ -173,12 +131,7 @@ input:
         syscall                                         ;returns the number of bytes read
         ret                                             ;returns the value of the read into rax
 
+
 ;store the original message in all elements of the array
 initializeMessageArray:
     
-
-exit:
-    ;; nominal exit
-    mov rax, 60
-    xor rdi, rdi
-    syscall
