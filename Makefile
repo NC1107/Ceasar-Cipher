@@ -7,4 +7,4 @@ run: main
 	./main
 
 clean:
-	rm *.o *.lst
+	rm *.o

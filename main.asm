@@ -35,9 +35,6 @@ extern displayUserMessages
 
         message0: db "This is the original message.", NEW_LINE,0
 
-        messagesArray: db message0
-
-
 
 
 
