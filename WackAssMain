@@ -19,8 +19,8 @@ extern readUserMessage
 ; Setup Array with all 10 original messages                                          *INCOMPLETE*
 ; make those elements addressable                                                    *INCOMPLETE*
 ; make arrays dynamically sized                                                      *INCOMPLETE*
-; make menu repeat until quit is chosen                                              *COMPLETE*
-; get user input for choice                                                          *COMPLETE*
+; make menu repeat until quit is chosen                                              *INCOMPLETE*
+; get user input for choice                                                          *INCOMPLETE*
 ; create the c functions for the menu                                                *INCOMPLETE*
 ; everything else                                                                    *INCOMPLETE*
 ;********************************************************************************************
@@ -43,27 +43,26 @@ extern readUserMessage
         l5Len: equ $ - l5
         l6: db "Enter your choice: "
         l6Len: equ $ - l6
+        l7: db "Error invalid input!", NEW_LINE
+        l7Len: equ $ - l7
 
-        ; ending these messages with null terminator since they will be used in C functions
-        orignalMessage: db "This is the original message.", NEW_LINE,0 ; 
-        orignalMessageLen: equ $ - orignalMessage
-        invalidOption: db "Invalid option! please try again!", NEW_LINE,0
-        invalidOptionLen: equ $ - invalidOption
+        message0: db "This is the original message.", NEW_LINE,0
+
 
 section .bss
-        menuChoice: resb 1         ;holds user's choice, 1 char, [s,r,c,f,q]
-        messageArray: resb 10      ;reserve 10 indexes for the message
-        insertionIndex: resd 8      ;keep track of how many insertions the user has made ONCE THIS HITS 9, IT MUST BE RESET TO 0 
-         
+        menuChoice: resb 1
+
 
 section .text
         global main
 
 
-main:   
+main:
+
         call printMenu
+
         ;get user input menu choice
-        call getMenuChoice
+        call getMenuChoice 
         mov al, byte[rsi]
         cmp al, 's'                             ;printing the current meeages
         je showMessage
@@ -92,6 +91,10 @@ main:
         
         ;testing printing the array of strings
         ;call displayUserMessages
+        
+        xor rax, rax
+        ret
+
 
 
 ;prints the menu and leaves
@@ -125,11 +128,9 @@ getMenuChoice:
         mov rdx, MAX_CHOICE_LENGTH                        ;store the max number of bytes the user can input
         call input    
         ;print user choice
-        ; mov rsi, menuChoice
-        ; mov rdx, MAX_CHOICE_LENGTH
-        ; call print
-        cmp byte[rsi], NEW_LINE
-        je getMenuChoice
+        mov rsi, menuChoice
+        mov rdx, MAX_CHOICE_LENGTH
+        call print
         ret
 
 showMessage:
@@ -155,8 +156,8 @@ extraCredit:
         jmp main                        ;return to main
 
 invalidInput:
-        mov rsi, invalidOption
-        mov rdx, invalidOptionLen
+        mov rsi, l7
+        mov rdx, l7Len
         call print
 
         jmp main                        ;return to main
@@ -172,10 +173,6 @@ input:
         mov rdi, STD_IN                                 ;stdin syscall
         syscall                                         ;returns the number of bytes read
         ret                                             ;returns the value of the read into rax
-
-;store the original message in all elements of the array
-initializeMessageArray:
-    
 
 exit:
     ;; nominal exit
