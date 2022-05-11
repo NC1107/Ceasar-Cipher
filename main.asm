@@ -48,24 +48,21 @@ extern malloc
         l6Len: equ $ - l6
 
 
-        orignalMessage: db "This is the original message.", NEW_LINE,0
+        ; ending these messages with null terminator since they will be used in C functions
+        orignalMessage: db "This is the original message.", NEW_LINE,0 ; 
         orignalMessageLen: equ $ - orignalMessage
-
+        invalidOption: db "Invalid option! please try again!", NEW_LINE,0
+        invalidOptionLen: equ $ - invalidOption
         
 
 
 
 
 section .bss
-        menuChoice: resb 1
-
-        ;reserve 10 indexes for the message
-        messageArray: resb 10
-
-        ;keep track of how many insertions the user has made
-        ;ONCE THIS HITS 9, IT MUST BE RESET TO 0
-        insertionIndex: resd 8
-        
+        menuChoice: resb 1         ;holds user's choice, 1 char, [s,r,c,f,q]
+        messageArray: resb 10      ;reserve 10 indexes for the message
+       insertionIndex: resd 8      ;keep track of how many insertions the user has made ONCE THIS HITS 9, IT MUST BE RESET TO 0 
+         
 
 section .text
         global main
@@ -84,7 +81,7 @@ main:
 
 
 
-;prints the menu and leaves
+;prints the menu and leaves, can simplify this by storing in array and looping printout
 printMenu:
         mov rsi, l0
         mov rdx, l0Len
@@ -135,5 +132,6 @@ input:
         ret                                             ;returns the value of the read into rax
 
 
+;store the original message in all elements of the array
 initializeMessageArray:
     

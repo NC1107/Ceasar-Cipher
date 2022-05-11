@@ -13,20 +13,8 @@ void displayUserMessages(char *userMessages[])
     }
 }
 
-// use malloc to resize given char* array
-char *resizeArray(char *array[], int newSize)
-{
-    char *newArray = (char *)malloc(sizeof(char) * newSize);
-    for (int i = 0; i < newSize; i++)
-    {
-        newArray[i] = *array[i];
-    }
-    free(array);
-    return newArray;
-}
-
 // get user input and store it in one of the arrays of strings
-void getUserInput(char *userMessages[], int insertionLocation)
+void readUserMessage(char *userMessages[], int insertionLocation)
 {
     char Ending_Symbols[3] = {'.', '!', '?'};
     char *userString[10000];
@@ -49,6 +37,25 @@ void getUserInput(char *userMessages[], int insertionLocation)
         return;
     }
     // the message is valid, place it in the given index
-
+    // free the previously stored message
+    free(userMessages[insertionLocation]);
+    userMessages[insertionLocation] = malloc(sizeof(char) * (userMessageLength + 1));
     userMessages[insertionLocation] = *userString;
+}
+
+// use malloc to resize given char* array
+char *resizeArray(char *array[], int newSize)
+{
+    char *newArray = (char *)malloc(sizeof(char) * newSize);
+    for (int i = 0; i < newSize; i++)
+    {
+        newArray[i] = *array[i];
+    }
+    free(array);
+    return newArray;
+}
+
+// does not store changes, just prints out the changes
+void decryptString(char *userMessages[])
+{
 }
