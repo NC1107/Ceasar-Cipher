@@ -39,6 +39,7 @@ void readUserMessage(char *userMessages[], int insertionLocation)
     // the message is valid, place it in the given index
     // free the previously stored message
     free(userMessages[insertionLocation]);
+    // allocate memory for the new message in the sizeof chars
     userMessages[insertionLocation] = malloc(sizeof(char) * (userMessageLength + 1));
     userMessages[insertionLocation] = *userString;
 }
