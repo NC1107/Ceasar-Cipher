@@ -48,6 +48,9 @@ extern readUserMessage
         l7: db "Enter what array you want to call caesar cipher on: "
         l7Len: equ $ - l7
 
+        extraCred: db "EXTRA CREDIt SHIT WORKING", NEW_LINE
+        extraCredLen equ $ - extraCred
+
         ; ending these messages with null terminator since they will be used in C functions
         orignalMessage: db "This is the original message.", NEW_LINE,0 ; 
         orignalMessageLen: equ $ - orignalMessage
@@ -60,6 +63,8 @@ section .bss
         insertionIndex: resd 8     ;keep track of how many insertions the user has made ONCE THIS HITS 9, IT MUST BE RESET TO 0
         ceasarChoice: resb 1       ;holds the user's choice of what array to call ceasar on 
         shiftValue: resb 1         ;holds the user's shift value for ceasar 
+
+        zCount: resb 10            ;holds the number of z's given
 
          
 
@@ -165,6 +170,9 @@ frequencyDecrypt:
         jmp main                                        ;return to main
 
 extraCredit:    
+        add byte[zCount], 1                             ;increment the number of z's
+        cmp byte[zCount], 4
+        je SnazzyExtraCreditProgram
         jmp main                                        ;return to main
 
 invalidInput:
@@ -210,3 +218,14 @@ exit:                                                   ; nominal exit
     mov rax, 60
     xor rdi, rdi
     syscall
+
+
+
+SnazzyExtraCreditProgram:
+        ;reset zCount
+        mov byte[zCount], 0
+        ;print extra credit prompt
+        mov rsi, extraCred
+        mov rdx, extraCredLen
+        call print
+        jmp main
