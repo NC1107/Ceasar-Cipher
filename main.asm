@@ -126,7 +126,6 @@ printMenu:
         call print
         ret
 
-;skips input and just dips
 getMenuChoice:
         mov rsi, menuChoice                               ;store the users shift value in the buffer
         mov rdx, MAX_CHOICE_LENGTH                        ;store the max number of bytes the user can input
@@ -142,38 +141,38 @@ getMenuChoice:
 showMessage:
         ;mov rdi, array
         ;call displayUserMessages
-        jmp main                                ;return to main
+        jmp main                                        ;return to main
 
+;mov rax, array
+;mov rsi, location
 readMessage:
-        ;mov rax, array
-        ;mov rsi, location
-        jmp main                                ;return to main
+        jmp main                                        ;return to main
 
 ceasarCypherCall:
-        call getCypherChoice                    ;get the array the user wants to use
+        call getCypherChoice                            ;get the array the user wants to use
         call getUserShift
-        mov qword[shiftValue], rax              ;get the user shift value
+        mov qword[shiftValue], rax                      ;get the user shift value
         mov rax, 8
-        mul qword[shiftValue]                   ;used to choose what string is selected
+        mul qword[shiftValue]                           ;used to choose what string is selected
         mov qword[shiftValue], rax
-        ;mov rdi, qword[array + shiftValue]      ;move the array into the paramater
+        ;mov rdi, qword[array + shiftValue]             ;move the array into the paramater
 
-        jmp main                                ;return to main
+        jmp main                                        ;return to main
 
 frequencyDecrypt:
         ;mov rdi, array
         ;call decryptString
-        jmp main                                ;return to main
+        jmp main                                        ;return to main
 
-extraCredit:
-        jmp main                                ;return to main
+extraCredit:    
+        jmp main                                        ;return to main
 
 invalidInput:
         mov rsi, invalidOption
         mov rdx, invalidOptionLen
         call print
 
-        jmp main                        ;return to main
+        jmp main                                        ;return to main
 
 print:                                                  ;move prompt to rsi, length to rdx
         mov rax, SYSCALL_WRITE                          ;syscall number moved into rax for write function
@@ -187,9 +186,8 @@ input:
         syscall                                         ;returns the number of bytes read
         ret                                             ;returns the value of the read into rax
 
+getCypherChoice:                                        ;get the choice of array 
 
-;get the choice of array 
-getCypherChoice:
         mov rsi, l7
         mov rdx, l7Len
         call input 
@@ -204,12 +202,11 @@ getCypherChoice:
         mov qword[ceasarChoice], rsi
         ret
 
-;store the original message in all elements of the array
-initializeMessageArray:
-    
+initializeMessageArray:                                 ;store the original message in all elements of the array
 
-exit:
-    ;; nominal exit
+    
+ 
+exit:                                                   ; nominal exit
     mov rax, 60
     xor rdi, rdi
     syscall

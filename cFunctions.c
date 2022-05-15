@@ -61,31 +61,42 @@ void decryptString(char *userMessages[])
 {
     int letterFrequency[26] = {0};
 
+    // print messages
+    displayUserMessages(userMessages);
+    // ask user what string they want to decrpyt
+    printf("Enter the index of the string you want to decrypt: ");
+    int index;
+    scanf("%d", &index);
+
+    // store the string
+    char *userString = userMessages[index];
+    // get the length of the string
+    int userMessageLength = strlen(userString);
+
     // get the frequency of each letter in the message
-    for (int i = 0; i < 10; i++)
+    for (int i = 0; i < userMessageLength; i++)
     {
-        for (int j = 0; j < strlen(userMessages[i]); j++)
+        if (isalpha(userString[i]))
         {
-            if (isalpha(userMessages[i][j]))
-            {
-                letterFrequency[tolower(userMessages[i][j]) - 'a']++;
-            }
+            letterFrequency[tolower(userString[i]) - 'a']++;
         }
     }
 
     // print out the frequency of each letter
     for (int i = 0; i < 26; i++)
     {
-        printf("%c: %d\n", i + 'a', letterFrequency[i]);
+        if (letterFrequency[i] != 0)
+        {
+            printf("%c: %d\n", i + 'a', letterFrequency[i]);
+        }
     }
-
     // get the most frequent letter
-    int mostFrequentLetter = 0;
+    int mostFrequentLetterIndex = 0;
     for (int i = 0; i < 26; i++)
     {
-        if (letterFrequency[i] > letterFrequency[mostFrequentLetter])
+        if (letterFrequency[i] > letterFrequency[mostFrequentLetterIndex])
         {
-            mostFrequentLetter = i;
+            mostFrequentLetterIndex = i;
         }
     }
 }
