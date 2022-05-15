@@ -1,6 +1,8 @@
 ; Project: Project 4
 ; Due Date: 04/24/2021
 ; Description: This program will do everything and more
+%include 'ceasar.asm'
+%include 'extraCreditGame.asm'
 %define NEW_LINE 10 
 %define SYSCALL_READ 0
 %define SYSCALL_WRITE 1
@@ -8,7 +10,6 @@
 %define STD_OUT 1
 %define MAX_CHOICE_LENGTH 1
 %define ARR_SIZE 10
-%include 'ceasar.asm'
 extern displayUserMessages
 extern malloc
 extern resizeArray
@@ -228,4 +229,5 @@ SnazzyExtraCreditProgram:
         mov rsi, extraCred
         mov rdx, extraCredLen
         call print
-        jmp main
+        call game
+
