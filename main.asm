@@ -60,6 +60,7 @@ section .bss
         insertionIndex: resd 8     ;keep track of how many insertions the user has made ONCE THIS HITS 9, IT MUST BE RESET TO 0
         ceasarChoice: resb 1       ;holds the user's choice of what array to call ceasar on 
         shiftValue: resb 1         ;holds the user's shift value for ceasar 
+
          
 
 section .text
@@ -151,11 +152,11 @@ readMessage:
 ceasarCypherCall:
         call getCypherChoice                    ;get the array the user wants to use
         call getUserShift
-        mov qword[shiftValue], rax                     ;get the user shift value
+        mov qword[shiftValue], rax              ;get the user shift value
         mov rax, 8
-        mul qword[shiftValue]                       ;used to choose what string is selected
+        mul qword[shiftValue]                   ;used to choose what string is selected
         mov qword[shiftValue], rax
-        mov rdi, qword[array + shiftValue]      ;move the array into the paramater
+        ;mov rdi, qword[array + shiftValue]      ;move the array into the paramater
 
         jmp main                                ;return to main
 
@@ -199,6 +200,7 @@ getCypherChoice:
         cmp byte[rsi], '9'
         jg getCypherChoice
 
+        sub qword[ceasarChoice], 48                     ;convert from ascii to decimal 
         mov qword[ceasarChoice], rsi
         ret
 
