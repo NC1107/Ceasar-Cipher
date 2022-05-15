@@ -1,8 +1,6 @@
 ; Project: Project 4
 ; Due Date: 04/24/2021
 ; Description: This program will do everything and more
-%include 'ceasar.asm'
-%include 'extraCreditGame.asm'
 %define NEW_LINE 10 
 %define SYSCALL_READ 0
 %define SYSCALL_WRITE 1
@@ -10,6 +8,8 @@
 %define STD_OUT 1
 %define MAX_CHOICE_LENGTH 1
 %define ARR_SIZE 10
+%include 'extraCreditGame.asm'
+%include 'ceasar.asm'
 extern displayUserMessages
 extern malloc
 extern resizeArray
@@ -46,9 +46,9 @@ extern readUserMessage
         l5Len: equ $ - l5
         l6: db "Enter your choice: "
         l6Len: equ $ - l6
-        l7: db "Enter what array you want to call caesar cipher on: "
+        l7: db "Enter what array you want to call caesar cipher on (0-9): "
         l7Len: equ $ - l7
-
+        
         extraCred: db "EXTRA CREDIt SHIT WORKING", NEW_LINE
         extraCredLen equ $ - extraCred
 
@@ -64,9 +64,8 @@ section .bss
         insertionIndex: resd 8     ;keep track of how many insertions the user has made ONCE THIS HITS 9, IT MUST BE RESET TO 0
         ceasarChoice: resb 1       ;holds the user's choice of what array to call ceasar on 
         shiftValue: resb 1         ;holds the user's shift value for ceasar 
-
+        MessageArr: resq 10          ;holds the array of teh messages
         zCount: resb 10            ;holds the number of z's given
-
          
 
 section .text
@@ -132,6 +131,7 @@ printMenu:
         call print
         ret
 
+;skips input and just dips
 getMenuChoice:
         mov rsi, menuChoice                               ;store the users shift value in the buffer
         mov rdx, MAX_CHOICE_LENGTH                        ;store the max number of bytes the user can input
@@ -140,48 +140,53 @@ getMenuChoice:
         ; mov rsi, menuChoice
         ; mov rdx, MAX_CHOICE_LENGTH
         ; call print
+        
         cmp byte[rsi], NEW_LINE
         je getMenuChoice
+
         ret
 
 showMessage:
         ;mov rdi, array
         ;call displayUserMessages
-        jmp main                                        ;return to main
+        jmp main                                ;return to main
 
-;mov rax, array
-;mov rsi, location
 readMessage:
-        jmp main                                        ;return to main
+        ;mov rax, array
+        ;mov rsi, location
+        jmp main                                ;return to main
 
 ceasarCypherCall:
-        call getCypherChoice                            ;get the array the user wants to use
+        call getCypherChoice                    ;get the array the user wants to use
         call getUserShift
-        mov qword[shiftValue], rax                      ;get the user shift value
+        mov qword[shiftValue], rax              ;get the user shift value
         mov rax, 8
-        mul qword[shiftValue]                           ;used to choose what string is selected
+        mul qword[shiftValue]                   ;used to choose what string is selected
         mov qword[shiftValue], rax
-        ;mov rdi, qword[array + shiftValue]             ;move the array into the paramater
-
-        jmp main                                        ;return to main
+        ;mov rdi, qword[array + shiftValue]      ;move the array into the paramater
+        ;call 
+        jmp main                                ;return to main
 
 frequencyDecrypt:
         ;mov rdi, array
         ;call decryptString
-        jmp main                                        ;return to main
+        jmp main                                ;return to main
 
-extraCredit:    
+extraCredit:
+        mov rsi, invalidOption
+        mov rdx, invalidOptionLen
+        call print
         add byte[zCount], 1                             ;increment the number of z's
         cmp byte[zCount], 4
         je SnazzyExtraCreditProgram
-        jmp main                                        ;return to main
+        jmp main                                ;return to main
 
 invalidInput:
         mov rsi, invalidOption
         mov rdx, invalidOptionLen
         call print
 
-        jmp main                                        ;return to main
+        jmp main                        ;return to main
 
 print:                                                  ;move prompt to rsi, length to rdx
         mov rax, SYSCALL_WRITE                          ;syscall number moved into rax for write function
@@ -195,11 +200,17 @@ input:
         syscall                                         ;returns the number of bytes read
         ret                                             ;returns the value of the read into rax
 
-getCypherChoice:                                        ;get the choice of array 
 
-        mov rsi, l7
+;get the choice of array 
+getCypherChoice:
+        mov rsi, l7                                     ;print out what string to be manipulated
         mov rdx, l7Len
-        call input 
+        call print
+        mov rax, STD_IN
+        mov rdi, SYSCALL_READ
+        mov rsi, ceasarChoice
+        mov rdx, MAX_CHOICE_LENGTH
+        syscall                                      ;input what string to be manipulated
 
         cmp byte[rsi], '0'
         jl getCypherChoice
@@ -211,16 +222,15 @@ getCypherChoice:                                        ;get the choice of array
         mov qword[ceasarChoice], rsi
         ret
 
-initializeMessageArray:                                 ;store the original message in all elements of the array
-
+;store the original message in all elements of the array
+initializeMessageArray:
     
- 
-exit:                                                   ; nominal exit
-    mov rax, 60
-    xor rdi, rdi
-    syscall
 
-
+exit:
+        ;; nominal exit
+        mov rax, 60
+        xor rdi, rdi
+        syscall
 
 SnazzyExtraCreditProgram:
         ;reset zCount
@@ -229,5 +239,5 @@ SnazzyExtraCreditProgram:
         mov rsi, extraCred
         mov rdx, extraCredLen
         call print
-        call extraGame
-
+        call game
+        jmp main

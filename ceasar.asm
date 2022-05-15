@@ -43,11 +43,11 @@ newLineLen: equ $ - newLine                              ;length of 1
 
 ;memory thats reserved but not initialized
         section .bss
-userShiftValue: resb MAX_SHIFT_BYTES                     ;user can input a number from 0 to 25
+userShiftValue: resb MAX_SHIFT_BYTES                     ;user can input_ a number from 0 to 25
 userShiftTotalBytes: resb MAX_SHIFT_BYTES                ;store the users shift byte length            
-userOriginalMessage: resb MAX_STRING_BYTES               ;user can only input a string above 30 characters
+userOriginalMessage: resb MAX_STRING_BYTES               ;user can only input_ a string above 30 characters
 userOriginalMessageTotalBytes: resb MAX_STRING_BYTES     ;store the users string byte length
-userEncrytedMessage: resb MAX_STRING_BYTES               ;user can only input a string above 30 characters
+userEncrytedMessage: resb MAX_STRING_BYTES               ;user can only input_ a string above 30 characters
 userShiftValueInAscii: resb ASCII_SIZE                   ;store the users shift value in ascii
 
 
@@ -111,11 +111,11 @@ input_:
 getUserShift:
         mov rsi, shiftPrompt                            ;move shift prompt ("Enter a shift value: ") into rsi
         mov rdx, shiftLen                               ;store the length of string for the buffer size
-        call print_                                      ;call the print_ function to output the string
+        call print_                                     ;call the print_ function to output the string
         mov rsi, userShiftValue                         ;store the users shift value in the buffer
-        mov rdx, MAX_SHIFT_BYTES                        ;store the max number of bytes the user can input
-        call input                                      ;call the input function to get the users input
-        mov qword[userShiftTotalBytes], rax             ;Store the number of bytes the user input
+        mov rdx, MAX_SHIFT_BYTES                        ;store the max number of bytes the user can input_
+        call input_                                     ;call the input_ function to get the users input_
+        mov qword[userShiftTotalBytes], rax             ;Store the number of bytes the user input_
         mov r10, rax                                    ; store number of bytes read in
         dec r10                                         ; subtract 1 to ignore newline in main loop
 
@@ -162,11 +162,11 @@ convertChar:
         mov qword[userShiftValueInAscii], rax           ;store the value in ascii if everything is correct
         ret                                             ;leave the function
 
-; repeat read sycall until the last char read in a newline
-; requires that rsi be an address where at least 1 byte can be written to        
 clearSTDIN:
+        ;; repeat read sycall until the last char read in a newline
+        ;; requires that rsi be an address where at least 1 byte can be written to
         mov rdx, 1
-        call input
+        call input_
         cmp byte[rsi], NEW_LINE
         jne clearSTDIN
         ret
@@ -177,8 +177,8 @@ getUserString:
         mov rdx, OriginalMessageLen                     ;store the length of string for the buffer size
         call print_                                      ;print_ the prompt
         mov rsi, userOriginalMessage                    ;store the users string in the buffer
-        mov rdx, MAX_STRING_BYTES                       ;store the max number of bytes the user can input
-        call input                                      ;call the input function to get the users input
+        mov rdx, MAX_STRING_BYTES                       ;store the max number of bytes the user can input_
+        call input_                                      ;call the input_ function to get the users input_
         cmp rax, MIN_STRING_BYTES                       ;compare the value to 30
         jle getUserString                               ;jump if RAX is less than or equal to MIN_STRING_BYTES(30)
         ret                                             ;return the value of rax
