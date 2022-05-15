@@ -55,11 +55,11 @@ userShiftValueInAscii: resb ASCII_SIZE                   ;store the users shift 
 
 
         section .text
-global main
+global ceasar
 
 
 
-main:
+caesar:
         call getUserShift
 
         ;store the byte amount
@@ -67,13 +67,13 @@ main:
         call getUserString                                      ;stay in this function till user enters correct string length
         mov qword[userOriginalMessageTotalBytes], rax
 
-        ;print their message back to them
+        ;print_ their message back to them
         mov rsi, CurrentMessagePrompt
         mov rdx, CurrentMessageLen
-        call print
+        call print_
         mov rsi, userOriginalMessage
         mov rdx, qword[userOriginalMessageTotalBytes]
-        call print
+        call print_
 
         ;begin handling ceasar cypher
         ;prepare the data and length for ceasar cypher function call
@@ -83,26 +83,26 @@ main:
         call ceasarCypher
         ;store the encrypted message after the function call
         ;mov qword[userEncrytedMessage], rax
-        ;print the encrypted message prompt
+        ;print_ the encrypted message prompt
         mov rsi, EncyptionPrompt
         mov rdx, EncyptionLen
-        call print
-        ;print the encrypted message
+        call print_
+        ;print_ the encrypted message
         mov rsi, userOriginalMessage
         mov rdx, qword[userOriginalMessageTotalBytes]
-        call print
+        call print_
 
         xor rax, rax                                    ;clear the rax register to ensure no error exit code
         ret                                             ;return to the operating system
 
 
-print:
+print_:
         mov rax, SYSCALL_WRITE                          ;syscall number moved into rax for write function
         mov rdi, STD_OUT                                ;standard output syscalll
         syscall                                         ;calls the write function
         ret                                             ;return to main
 
-input:
+input_:
         mov rax, SYSCALL_READ                           ;call read function syscall
         mov rdi, STD_IN                                 ;stdin syscall
         syscall                                         ;returns the number of bytes read
@@ -111,7 +111,7 @@ input:
 getUserShift:
         mov rsi, shiftPrompt                            ;move shift prompt ("Enter a shift value: ") into rsi
         mov rdx, shiftLen                               ;store the length of string for the buffer size
-        call print                                      ;call the print function to output the string
+        call print_                                      ;call the print_ function to output the string
         mov rsi, userShiftValue                         ;store the users shift value in the buffer
         mov rdx, MAX_SHIFT_BYTES                        ;store the max number of bytes the user can input
         call input                                      ;call the input function to get the users input
@@ -175,7 +175,7 @@ clearSTDIN:
 getUserString:
         mov rsi, OriginalMessagePrompt                  ;ask user "Enter original message: "
         mov rdx, OriginalMessageLen                     ;store the length of string for the buffer size
-        call print                                      ;print the prompt
+        call print_                                      ;print_ the prompt
         mov rsi, userOriginalMessage                    ;store the users string in the buffer
         mov rdx, MAX_STRING_BYTES                       ;store the max number of bytes the user can input
         call input                                      ;call the input function to get the users input

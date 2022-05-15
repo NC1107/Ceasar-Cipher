@@ -8,11 +8,13 @@
 %define STD_OUT 1
 %define MAX_CHOICE_LENGTH 1
 %define ARR_SIZE 10
+%include 'ceasar.asm'
 extern displayUserMessages
 extern malloc
 extern resizeArray
 extern decryptString
 extern readUserMessage
+
 
 
 ;********************************************************************************************
@@ -43,6 +45,8 @@ extern readUserMessage
         l5Len: equ $ - l5
         l6: db "Enter your choice: "
         l6Len: equ $ - l6
+        l7: db "Enter what array you want to call caesar cipher on: "
+        l7Len: equ $ - l7
 
         ; ending these messages with null terminator since they will be used in C functions
         orignalMessage: db "This is the original message.", NEW_LINE,0 ; 
@@ -53,7 +57,9 @@ extern readUserMessage
 section .bss
         menuChoice: resb 1         ;holds user's choice, 1 char, [s,r,c,f,q]
         messageArray: resb 10      ;reserve 10 indexes for the message
-        insertionIndex: resd 8      ;keep track of how many insertions the user has made ONCE THIS HITS 9, IT MUST BE RESET TO 0 
+        insertionIndex: resd 8     ;keep track of how many insertions the user has made ONCE THIS HITS 9, IT MUST BE RESET TO 0
+        ceasarChoice: resb 1       ;holds the user's choice of what array to call ceasar on 
+        shiftValue: resb 1         ;holds the user's shift value for ceasar 
          
 
 section .text
@@ -74,9 +80,9 @@ main:
         cmp al, 'R'                             ;read new meeages
         je readMessage                        
         cmp al, 'c'                             ;caesar cipher
-        je ceasarCypher
+        je ceasarCypherCall
         cmp al, 'C'                             ;caesar cipher
-        je ceasarCypher
+        je ceasarCypherCall
         cmp al, 'f'                             ;frequency decrypt    
         je frequencyDecrypt
         cmp al, 'F'                             ;frequency decrypt   
@@ -133,26 +139,33 @@ getMenuChoice:
         ret
 
 showMessage:
-        ;mov rax, array
-        ;mov rsi, arraySize
+        ;mov rdi, array
         ;call displayUserMessages
-        jmp main                        ;return to main
+        jmp main                                ;return to main
 
 readMessage:
         ;mov rax, array
         ;mov rsi, location
-        jmp main                        ;return to main
+        jmp main                                ;return to main
 
-ceasarCypher:
-        jmp main                        ;return to main
+ceasarCypherCall:
+        call getCypherChoice                    ;get the array the user wants to use
+        call getUserShift
+        mov qword[shiftValue], rax                     ;get the user shift value
+        mov rax, 8
+        mul qword[shiftValue]                       ;used to choose what string is selected
+        mov qword[shiftValue], rax
+        mov rdi, qword[array + shiftValue]      ;move the array into the paramater
+
+        jmp main                                ;return to main
 
 frequencyDecrypt:
-        ;mov rax, array
+        ;mov rdi, array
         ;call decryptString
-        jmp main                        ;return to main
+        jmp main                                ;return to main
 
 extraCredit:
-        jmp main                        ;return to main
+        jmp main                                ;return to main
 
 invalidInput:
         mov rsi, invalidOption
@@ -172,6 +185,22 @@ input:
         mov rdi, STD_IN                                 ;stdin syscall
         syscall                                         ;returns the number of bytes read
         ret                                             ;returns the value of the read into rax
+
+
+;get the choice of array 
+getCypherChoice:
+        mov rsi, l7
+        mov rdx, l7Len
+        call input 
+
+        cmp byte[rsi], '0'
+        jl getCypherChoice
+
+        cmp byte[rsi], '9'
+        jg getCypherChoice
+
+        mov qword[ceasarChoice], rsi
+        ret
 
 ;store the original message in all elements of the array
 initializeMessageArray:
