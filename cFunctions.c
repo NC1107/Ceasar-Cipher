@@ -59,4 +59,33 @@ char *resizeArray(char *array[], int newSize)
 // does not store changes, just prints out the changes
 void decryptString(char *userMessages[])
 {
+    int letterFrequency[26] = {0};
+
+    // get the frequency of each letter in the message
+    for (int i = 0; i < 10; i++)
+    {
+        for (int j = 0; j < strlen(userMessages[i]); j++)
+        {
+            if (isalpha(userMessages[i][j]))
+            {
+                letterFrequency[tolower(userMessages[i][j]) - 'a']++;
+            }
+        }
+    }
+
+    // print out the frequency of each letter
+    for (int i = 0; i < 26; i++)
+    {
+        printf("%c: %d\n", i + 'a', letterFrequency[i]);
+    }
+
+    // get the most frequent letter
+    int mostFrequentLetter = 0;
+    for (int i = 0; i < 26; i++)
+    {
+        if (letterFrequency[i] > letterFrequency[mostFrequentLetter])
+        {
+            mostFrequentLetter = i;
+        }
+    }
 }

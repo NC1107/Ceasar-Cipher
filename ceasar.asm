@@ -162,9 +162,9 @@ convertChar:
         mov qword[userShiftValueInAscii], rax           ;store the value in ascii if everything is correct
         ret                                             ;leave the function
 
+; repeat read sycall until the last char read in a newline
+; requires that rsi be an address where at least 1 byte can be written to        
 clearSTDIN:
-        ;; repeat read sycall until the last char read in a newline
-        ;; requires that rsi be an address where at least 1 byte can be written to
         mov rdx, 1
         call input
         cmp byte[rsi], NEW_LINE
