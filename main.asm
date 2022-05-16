@@ -178,8 +178,8 @@ ceasarCypherCall:
         jmp choice                                        ;return to choice
 
 frequencyDecrypt:
-        ;mov rdi, array
-        ;call decryptString
+        mov rdi, messageArray
+        call decryptString
         jmp choice                                        ;return to choice
 
 extraCredit:
@@ -243,7 +243,7 @@ getCypherChoice:
         sub al, '0'
         ret
 
-.invalidNoNewline
+.invalidNoNewline:
         mov rsi, ceasarChoice
         call clearSTDIN_
         jmp getCypherChoice
