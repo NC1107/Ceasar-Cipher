@@ -181,8 +181,8 @@ ceasarCypherCall:
         jmp choice                                        ;return to choice
 
 frequencyDecrypt:
-        ;mov rdi, array
-        ;call decryptString
+        mov rdi, messageArray
+        call decryptString
         jmp choice                                        ;return to choice
 
 extraCredit:

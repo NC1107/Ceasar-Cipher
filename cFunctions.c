@@ -10,6 +10,38 @@ typedef unsigned char uint8_t;
 #define STDIN 0
 #define MAX_STRING_SIZE 1000
 
+// get distances between two letters
+int getDistance(char letter1, char letter2)
+{
+    int distance = letter2 - letter1;
+    if (distance < 0)
+    {
+        distance += 26;
+    }
+    return distance;
+}
+// shift the letters in the string by the given distance
+void stringShifter(char *string, int distance)
+{
+    for (int i = 0; i < strlen(string); i++)
+    {
+        string[i] = tolower(string[i]);
+        if (isalpha(string[i]))
+        {
+            string[i] = string[i] + distance;
+            // check if the letter is out of bounds
+            if (string[i] > 'z')
+            {
+                string[i] = string[i] - 26;
+            }
+            if (string[i] < 'a')
+            {
+                string[i] = string[i] + 26;
+            }
+        }
+    }
+}
+
 // printout all string values from array of strings
 void displayUserMessages(char *userMessages[])
 {
@@ -28,11 +60,11 @@ void readUserMessage(char **userMessages, uint8_t insertionLocation)
     while (!readSuccess)
     {
         printf("Enter a new message:\n");
-        //scanf("%s", userString); // <- Awful function, the worst
+        // scanf("%s", userString); // <- Awful function, the worst
         stringSize = read(STDIN, userString, MAX_STRING_SIZE);
         // check that read ran properly
         // read must not take up the entire buffer, needs room for null-terminator
-        if (stringSize < 2  || stringSize == MAX_STRING_SIZE)
+        if (stringSize < 2 || stringSize == MAX_STRING_SIZE)
         {
             printf("Read failed. String is either too small or too large\n");
             continue;
@@ -40,7 +72,7 @@ void readUserMessage(char **userMessages, uint8_t insertionLocation)
         // add null-terminator
         userString[stringSize] = 0;
         // check if the ending character (before the newline) is valid
-        char lastChar = userString[stringSize-2];
+        char lastChar = userString[stringSize - 2];
         if (lastChar != '!' && lastChar != '?' && lastChar != '.')
         {
             printf("Invalid ending character, Try again.\n");
@@ -61,7 +93,8 @@ void readUserMessage(char **userMessages, uint8_t insertionLocation)
         {
             userMessages[insertionLocation][i] = userString[i];
             // stop after the null terminator
-            if (!userString[i]) return;
+            if (!userString[i])
+                return;
             i = i + 1;
         }
     }
