@@ -14,7 +14,7 @@
 %define ASCII_OFFSET 48
 %define ASCII_SIZE 8
 
-
+extern printf
 
 
 ;whenever you are "dereferencing" ([]) specifcy the number of 
@@ -45,10 +45,9 @@ newLineLen: equ $ - newLine                              ;length of 1
         section .bss
 userShiftValue: resb MAX_SHIFT_BYTES                     ;user can input_ a number from 0 to 25
 userShiftTotalBytes: resb MAX_SHIFT_BYTES                ;store the users shift byte length            
-userOriginalMessage: resb MAX_STRING_BYTES               ;user can only input_ a string above 30 characters
-userOriginalMessageTotalBytes: resb MAX_STRING_BYTES     ;store the users string byte length
+userOriginalMessage: resq 1                              ;user can only input_ a string above 30 characters
 userEncrytedMessage: resb MAX_STRING_BYTES               ;user can only input_ a string above 30 characters
-userShiftValueInAscii: resb ASCII_SIZE                   ;store the users shift value in ascii
+shiftValue: resq 1                              ;store the users shift value
 
 
 
@@ -59,27 +58,22 @@ global ceasar
 
 
 
-caesar:
-        call getUserShift
-
-        ;store the byte amount
+ceasar:
+        ;store the char* from main
+        mov qword[userOriginalMessage], rdi
         
-        call getUserString                                      ;stay in this function till user enters correct string length
-        mov qword[userOriginalMessageTotalBytes], rax
+        call getUserShift       ; integer shoft value will be stored at shiftValue
 
-        ;print_ their message back to them
+        ;print their message back to them
         mov rsi, CurrentMessagePrompt
         mov rdx, CurrentMessageLen
         call print_
-        mov rsi, userOriginalMessage
-        mov rdx, qword[userOriginalMessageTotalBytes]
-        call print_
+        mov rdi, qword[userOriginalMessage]
+        call printf
 
         ;begin handling ceasar cypher
         ;prepare the data and length for ceasar cypher function call
-        mov rsi, userOriginalMessage
-        mov rdx, qword[userOriginalMessageTotalBytes]
-        mov rcx, 0
+        mov rdi, qword[userOriginalMessage]
         call ceasarCypher
         ;store the encrypted message after the function call
         ;mov qword[userEncrytedMessage], rax
@@ -87,13 +81,12 @@ caesar:
         mov rsi, EncyptionPrompt
         mov rdx, EncyptionLen
         call print_
-        ;print_ the encrypted message
-        mov rsi, userOriginalMessage
-        mov rdx, qword[userOriginalMessageTotalBytes]
-        call print_
+        ;print the encrypted message
+        mov rdi, qword[userOriginalMessage]
+        call printf
 
         xor rax, rax                                    ;clear the rax register to ensure no error exit code
-        ret                                             ;return to the operating system
+        ret
 
 
 print_:
@@ -159,7 +152,7 @@ convertChar:
         jl getUserShift                                 ;if the value is less than 0, go back to the beginning of the function
         cmp rax, 25                                     ;compare the value to 25
         jg getUserShift                                 ;if the value is greater than 25, go back to the beginning of the function
-        mov qword[userShiftValueInAscii], rax           ;store the value in ascii if everything is correct
+        mov qword[shiftValue], rax           ;store the value in ascii if everything is correct
         ret                                             ;leave the function
 
 clearSTDIN:
@@ -171,37 +164,16 @@ clearSTDIN:
         jne clearSTDIN
         ret
 
-;we want to stay here until the string length is greater than 30
-getUserString:
-        mov rsi, OriginalMessagePrompt                  ;ask user "Enter original message: "
-        mov rdx, OriginalMessageLen                     ;store the length of string for the buffer size
-        call print_                                      ;print_ the prompt
-        mov rsi, userOriginalMessage                    ;store the users string in the buffer
-        mov rdx, MAX_STRING_BYTES                       ;store the max number of bytes the user can input_
-        call input_                                      ;call the input_ function to get the users input_
-        cmp rax, MIN_STRING_BYTES                       ;compare the value to 30
-        jle getUserString                               ;jump if RAX is less than or equal to MIN_STRING_BYTES(30)
-        ret                                             ;return the value of rax
-
-
 ceasarCypher:
-        ; is shift value
-        ;rsi is orignal message
-        ;rdx is orignal message length
-
-        ;loop through all the characters in the string
-        ;call helper function with the current character and the shift value
-        ;store the result in the current character
-        ;increment the current character
-
-        ;validate to make sure the character is a letter
-        cmp rcx, rdx                                    ;compare to make sure not done
-        jl readChar
-        ret
+        ; rdi is a pointer to the string to change
+        xor rcx, rcx
 
 readChar:
         xor rax, rax
-        mov al, byte[rsi + rcx]                         ;move the current char to the al register
+        mov al, byte[rdi + rcx]                         ;move the current char to the al register
+
+        cmp al, 0                                       ; end cypher at null terminator
+        ret
 
         cmp al, 'A'                                     ;check if char is less than 'A'
         jl increment                                    ;char is not a letter increment 
@@ -219,7 +191,7 @@ readChar:
 shiftUpperCharacter:
         ;al is the bufferuserOriginalMessageTotalBytes]
         ;shift the character and return it
-        add rax, qword[userShiftValueInAscii]           ;add the shift value to the char
+        add rax, qword[shiftValue]           ;add the shift value to the char
         cmp al, 'Z'                                     ;see if it needs to 'wrap back around'
         ja subtract                                     ;if so wrap back
         jmp increment                                   ;else not increment
@@ -228,19 +200,19 @@ shiftUpperCharacter:
 shiftLowerCharacter:
         ;al is the bufferuserOriginalMessageTotalBytes]
         ;shift the character and return it
-        add rax, qword[userShiftValueInAscii]           ;add the shift value to the car
+        add rax, qword[shiftValue]           ;add the shift value to the car
         cmp al, 'z'                                     ;see if it needs to 'wrap back around'
         ja subtract                                     ;if so wrap back
         jmp increment                                   ;else not increment
 
 
 subtract: 
-        sub al, 26                                      ;subtract 26 to wrap around Z->A
+        sub al, 26                                      ;subtract 26 to wrap around Z->A or z->a
                                                         ;increment
 
 
 increment:
-        mov byte[rsi + rcx], al                         ; store the char we operated on in al
-        add rcx, 1                                      ;add 1 to rcx the incrementing register
-        jmp ceasarCypher                                ;return to ceasarCypher after incrementing
+        mov byte[rdi + rcx], al                         ; store the char we operated on in al
+        inc rcx                                      ;add 1 to rcx the incrementing register
+        jmp readChar                                ;return to ceasarCypher after incrementing
 

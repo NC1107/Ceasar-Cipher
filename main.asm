@@ -8,9 +8,9 @@
 %define STD_OUT 1
 %define MAX_CHOICE_LENGTH 2
 %define ARR_SIZE 10
+%define MAX_STRING_BYTES 1000
 %include 'extraCreditGame.asm'
-%include 'ceasar.asm'
-%define MAX_MESSAGE_SIZE 1000
+extern ceasar
 extern displayUserMessages
 extern resizeArray
 extern decryptString
@@ -65,7 +65,7 @@ section .bss
         ceasarChoice: resb MAX_CHOICE_LENGTH            ;holds the user's choice of what array to call ceasar on 
         shiftValue: resb 1                              ;holds the user's shift value for ceasar 
         zCount: resb ARR_SIZE                           ;holds the number of z's given
-        strings: resb MAX_MESSAGE_SIZE * 10             ;hold 10 strings
+        strings: resb MAX_STRING_BYTES * 10             ;hold 10 strings
 
 section .text
         global main
@@ -171,18 +171,15 @@ readMessage:
 
 ceasarCypherCall:
         call getCypherChoice                            ;get the array the user wants to use
-        call getUserShift
-        mov qword[shiftValue], rax                      ;get the user shift value
-        mov rax, 8
-        mul qword[shiftValue]                           ;used to choose what string is selected
-        mov qword[shiftValue], rax
-        ;mov rdi, qword[array + shiftValue]             ;move the array into the paramater
-        ;call 
+        mov rdx, 8
+        mul rdx
+        mov rdi, qword[messageArray + rax]             ;move the array into the paramater for ceasar
+        call ceasar
         jmp choice                                        ;return to choice
 
 frequencyDecrypt:
-        mov rdi, messageArray
-        call decryptString
+        ;mov rdi, array
+        ;call decryptString
         jmp choice                                        ;return to choice
 
 extraCredit:
@@ -222,6 +219,7 @@ input:
 
 ;get the choice of array 
 getCypherChoice:
+
         mov rsi, l7                                     ;print out what string to be manipulated
         mov rdx, l7Len
         call print
@@ -237,13 +235,18 @@ getCypherChoice:
         cmp byte[ceasarChoice], '9'
         jg getCypherChoice
 
-        cmp byte[ceasarChoice], NEW_LINE
-        je getCypherChoice
-
-        ;implement ceasar part here
-        ; sub byte[ceasarChoice], 48                     ;convert from ascii to decimal 
-        ; mov byte[ceasarChoice], rsi
+        cmp byte[ceasarChoice + 1], NEW_LINE
+        jne getCypherChoice.invalidNoNewline
+        ;; put the index in rax and return
+        xor rax, rax
+        mov al, byte[ceasarChoice]
+        sub al, '0'
         ret
+
+.invalidNoNewline
+        mov rsi, ceasarChoice
+        call clearSTDIN_
+        jmp getCypherChoice
 
 ;store the original message in all elements of the array
 ;rdi stores the pointer to 
