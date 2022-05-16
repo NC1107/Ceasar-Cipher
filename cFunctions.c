@@ -25,21 +25,12 @@ void stringShifter(char *string, int distance)
 {
     for (int i = 0; i < strlen(string); i++)
     {
-        string[i] = tolower(string[i]);
         if (isalpha(string[i]))
         {
-            string[i] = string[i] + distance;
-            // check if the letter is out of bounds
-            if (string[i] > 'z')
-            {
-                string[i] = string[i] - 26;
-            }
-            if (string[i] < 'a')
-            {
-                string[i] = string[i] + 26;
-            }
+            string[i] = (string[i] + distance - 'a') % 26 + 'a';
         }
     }
+    printf("%s\n", string);
 }
 
 // printout all string values from array of strings
@@ -123,8 +114,15 @@ void decryptString(char *userMessages[])
     displayUserMessages(userMessages);
     // ask user what string they want to decrpyt
     printf("Enter the index of the string you want to decrypt: ");
-    int index;
-    scanf("%d", &index);
+    int index = 1;
+    // scanf("%d", &index);
+    //  check if the index is valid
+    if (index < 0 || index > 9)
+    {
+        printf("Invalid index, Try again.\n");
+        return;
+    }
+
     // store the string
     char *userString = userMessages[index];
     // get the length of the string
@@ -162,6 +160,7 @@ void decryptString(char *userMessages[])
     int distance5 = getDistance(BANNED[4], frequencyValues[4]);
 
     // shift the letters in the string by the distance
+    printf("Decrypted Messages\n");
     stringShifter(userString, distance);
     stringShifter(userString, distance2);
     stringShifter(userString, distance3);

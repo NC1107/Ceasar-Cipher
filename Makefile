@@ -10,3 +10,7 @@ run: main
 
 clean:
 	rm *.o main
+
+
+valgrind:
+	valgrind --leak-check=full --show-reachable=yes ./main
