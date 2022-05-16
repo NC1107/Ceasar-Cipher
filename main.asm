@@ -6,12 +6,12 @@
 %define SYSCALL_WRITE 1
 %define STD_IN 0
 %define STD_OUT 1
-%define MAX_CHOICE_LENGTH 1
+%define MAX_CHOICE_LENGTH 2
 %define ARR_SIZE 10
 %include 'extraCreditGame.asm'
 %include 'ceasar.asm'
+%define MAX_MESSAGE_SIZE 1000
 extern displayUserMessages
-extern malloc
 extern resizeArray
 extern decryptString
 extern readUserMessage
@@ -44,12 +44,12 @@ extern readUserMessage
         l4Len: equ $ - l4
         l5: db "q - quit program", NEW_LINE
         l5Len: equ $ - l5
-        l6: db "Enter your choice: "
+        l6: db "Enter your choice: ", 
         l6Len: equ $ - l6
-        l7: db "Enter what array you want to call caesar cipher on (0-9): "
+        l7: db "Enter what array you want to call caesar cipher on (0-9): ", 
         l7Len: equ $ - l7
         
-        extraCred: db "EXTRA CREDIt SHIT WORKING", NEW_LINE
+        extraCred: db "EXTRA CREDIT MESSAGE WORKING", NEW_LINE
         extraCredLen equ $ - extraCred
 
         ; ending these messages with null terminator since they will be used in C functions
@@ -59,24 +59,38 @@ extern readUserMessage
         invalidOptionLen: equ $ - invalidOption
 
 section .bss
-        menuChoice: resb 1         ;holds user's choice, 1 char, [s,r,c,f,q]
-        messageArray: resb 10      ;reserve 10 indexes for the message
-        insertionIndex: resd 8     ;keep track of how many insertions the user has made ONCE THIS HITS 9, IT MUST BE RESET TO 0
-        ceasarChoice: resb 1       ;holds the user's choice of what array to call ceasar on 
-        shiftValue: resb 1         ;holds the user's shift value for ceasar 
-        MessageArr: resq 10          ;holds the array of teh messages
-        zCount: resb 10            ;holds the number of z's given
-         
+        menuChoice: resb MAX_CHOICE_LENGTH              ;holds user's choice, 1 char, [s,r,c,f,q] and the new line
+        messageArray: resq ARR_SIZE                     ;reserve 10 pointers for the message
+        insertionIndex: resb MAX_CHOICE_LENGTH          ;keep track of how many insertions the user has made ONCE THIS HITS 10, IT MUST BE RESET TO 0
+        ceasarChoice: resb MAX_CHOICE_LENGTH            ;holds the user's choice of what array to call ceasar on 
+        shiftValue: resb 1                              ;holds the user's shift value for ceasar 
+        zCount: resb ARR_SIZE                           ;holds the number of z's given
+        strings: resb MAX_MESSAGE_SIZE * 10             ;hold 10 strings
 
 section .text
         global main
 
-
 main:   
+        mov byte[insertionIndex], 0     ; the first read index will be 0...
+                                        ; incremented each read that's made
+        call initializeMessageArray     ; fill the buffer in memory with originalMessage and...
+                                        ; store the location of each string in messageArray
+
+choice:
+
         call printMenu
         ;get user input menu choice
         call getMenuChoice
-        mov al, byte[rsi]
+        ;; check that at least 2 chars were read in
+        cmp rax, 2
+        jl invalidInput
+        ;; check that the second char is newline (ie. user did not enter 'ab\n')
+        ;; this means there is still garbage in STDIN, it must be emptied
+        cmp byte[menuChoice + 1], 10
+        jne invalidInputClearSTDIN
+        
+        mov al, byte[menuChoice]
+
         cmp al, 's'                             ;printing the current meeages
         je showMessage
         cmp al, 'S'                             ;printing the current meeages
@@ -136,41 +150,40 @@ getMenuChoice:
         mov rsi, menuChoice                               ;store the users shift value in the buffer
         mov rdx, MAX_CHOICE_LENGTH                        ;store the max number of bytes the user can input
         call input    
-        ;print user choice
-        ; mov rsi, menuChoice
-        ; mov rdx, MAX_CHOICE_LENGTH
-        ; call print
-        
-        cmp byte[rsi], NEW_LINE
-        je getMenuChoice
-
         ret
 
 showMessage:
-        ;mov rdi, array
-        ;call displayUserMessages
-        jmp main                                ;return to main
+        mov rdi, messageArray
+        call displayUserMessages
+        jmp choice                                ;return to choice
 
 readMessage:
-        ;mov rax, array
-        ;mov rsi, location
-        jmp main                                ;return to main
+        mov rdi, messageArray
+        xor rsi, rsi
+        mov sil, byte[insertionIndex]
+        call readUserMessage
+        inc byte[insertionIndex]        ; increment insertionIndex after read
+        ;; insertionIndex must be 0-9, take the modulo 10
+        cmp byte[insertionIndex], 10
+        jl choice                      ; insertionIndex is 0-9, this operation is over
+        mov byte[insertionIndex], 0     ; otherwise, reset insertionIndex to 0
+        jmp choice                                        ;return to choice
 
 ceasarCypherCall:
-        call getCypherChoice                    ;get the array the user wants to use
+        call getCypherChoice                            ;get the array the user wants to use
         call getUserShift
-        mov qword[shiftValue], rax              ;get the user shift value
+        mov qword[shiftValue], rax                      ;get the user shift value
         mov rax, 8
-        mul qword[shiftValue]                   ;used to choose what string is selected
+        mul qword[shiftValue]                           ;used to choose what string is selected
         mov qword[shiftValue], rax
-        ;mov rdi, qword[array + shiftValue]      ;move the array into the paramater
+        ;mov rdi, qword[array + shiftValue]             ;move the array into the paramater
         ;call 
-        jmp main                                ;return to main
+        jmp choice                                        ;return to choice
 
 frequencyDecrypt:
         ;mov rdi, array
         ;call decryptString
-        jmp main                                ;return to main
+        jmp choice                                        ;return to choice
 
 extraCredit:
         mov rsi, invalidOption
@@ -179,14 +192,20 @@ extraCredit:
         add byte[zCount], 1                             ;increment the number of z's
         cmp byte[zCount], 4
         je SnazzyExtraCreditProgram
-        jmp main                                ;return to main
+        jmp choice                                        ;return to choice
+
+invalidInputClearSTDIN:
+        ;; will also clear any bytes remaining in STDIN...
+        ;; ONLY jmp here if you have not read in a newline when you expected to
+        mov rsi, menuChoice
+        call clearSTDIN_
 
 invalidInput:
-        mov rsi, invalidOption
+        mov rsi, invalidOption          
         mov rdx, invalidOptionLen
         call print
 
-        jmp main                        ;return to main
+        jmp choice                                        ;return to choice
 
 print:                                                  ;move prompt to rsi, length to rdx
         mov rax, SYSCALL_WRITE                          ;syscall number moved into rax for write function
@@ -212,19 +231,41 @@ getCypherChoice:
         mov rdx, MAX_CHOICE_LENGTH
         syscall                                      ;input what string to be manipulated
 
-        cmp byte[rsi], '0'
+        cmp byte[ceasarChoice], '0'
         jl getCypherChoice
 
-        cmp byte[rsi], '9'
+        cmp byte[ceasarChoice], '9'
         jg getCypherChoice
 
-        sub qword[ceasarChoice], 48                     ;convert from ascii to decimal 
-        mov qword[ceasarChoice], rsi
+        cmp byte[ceasarChoice], NEW_LINE
+        je getCypherChoice
+
+        ;implement ceasar part here
+        ; sub byte[ceasarChoice], 48                     ;convert from ascii to decimal 
+        ; mov byte[ceasarChoice], rsi
         ret
 
 ;store the original message in all elements of the array
+;rdi stores the pointer to 
 initializeMessageArray:
-    
+        mov r10, strings
+        xor r11, r11
+.loopNewString:
+        mov qword[messageArray + 8*r11], r10               ;set to default message
+        xor rcx, rcx                            ; use rcx to keep track of byte in the string
+.loopStringDeepCopy:
+        mov al, byte[orignalMessage + rcx]
+        mov byte[r10 + rcx], al
+        inc rcx
+        cmp al, 0                               ; keep copying chars until null terminator
+        jne initializeMessageArray.loopStringDeepCopy
+
+        add r10, MAX_STRING_BYTES                       ;next reserved memory is 1000 away
+        inc r11                                         ;next element in 2d array
+        cmp r11, ARR_SIZE
+        jl initializeMessageArray.loopNewString
+
+        ret
 
 exit:
         ;; nominal exit
@@ -239,5 +280,14 @@ SnazzyExtraCreditProgram:
         mov rsi, extraCred
         mov rdx, extraCredLen
         call print
-        call extraGame
-        jmp main
+        call game
+        jmp choice
+
+clearSTDIN_:
+        ;; repeat read sycall until the last char read in a newline
+        ;; requires that rsi be an address where at least 1 byte can be written to
+        mov rdx, 1
+        call input
+        cmp byte[rsi], NEW_LINE
+        jne clearSTDIN_
+        ret
