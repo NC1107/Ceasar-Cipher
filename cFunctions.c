@@ -82,4 +82,56 @@ char *resizeArray(char *array[], int newSize)
 // does not store changes, just prints out the changes
 void decryptString(char *userMessages[])
 {
+    int letterFrequency[26] = {0};
+    char frequencyValues[5] = {'e', 't', 'a', 'o', 'i'};
+    char BANNED[5] = {0};
+
+    // print messages
+    displayUserMessages(userMessages);
+    // ask user what string they want to decrpyt
+    printf("Enter the index of the string you want to decrypt: ");
+    int index;
+    scanf("%d", &index);
+    // store the string
+    char *userString = userMessages[index];
+    // get the length of the string
+    int userMessageLength = strlen(userString);
+
+    // get the frequency of each letter in the message
+    for (int i = 0; i < userMessageLength; i++)
+    {
+        if (isalpha(userString[i]))
+        {
+            letterFrequency[tolower(userString[i]) - 'a']++;
+        }
+    }
+    // iterate until we have the 5 most frequent letters
+    for (int i = 0; i < 5; i++)
+    {
+        int max = 0;
+        int maxIndex = 0;
+        for (int j = 0; j < 26; j++)
+        {
+            if (letterFrequency[j] > max)
+            {
+                max = letterFrequency[j];
+                maxIndex = j;
+            }
+        }
+        BANNED[i] = maxIndex + 'a';
+        letterFrequency[maxIndex] = 0;
+    }
+    // get the distance between the most frequent letters
+    int distance = getDistance(BANNED[0], frequencyValues[0]);
+    int distance2 = getDistance(BANNED[1], frequencyValues[1]);
+    int distance3 = getDistance(BANNED[2], frequencyValues[2]);
+    int distance4 = getDistance(BANNED[3], frequencyValues[3]);
+    int distance5 = getDistance(BANNED[4], frequencyValues[4]);
+
+    // shift the letters in the string by the distance
+    stringShifter(userString, distance);
+    stringShifter(userString, distance2);
+    stringShifter(userString, distance3);
+    stringShifter(userString, distance4);
+    stringShifter(userString, distance5);
 }
