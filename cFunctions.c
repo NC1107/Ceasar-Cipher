@@ -90,11 +90,12 @@ char *resizeArray(char *array[], int newSize)
 }
 
 // does not store changes, just prints out the changes
+// does not store changes, just prints out the changes
 void decryptString(char *userMessages[])
 {
     int letterFrequency[26] = {0};
     char frequencyValues[5] = {'e', 't', 'a', 'o', 'i'};
-    char BANNED[5];
+    char BANNED[5] = {0};
 
     // print messages
     displayUserMessages(userMessages);
@@ -105,17 +106,16 @@ void decryptString(char *userMessages[])
     // store the string
     char *userString = userMessages[index];
     // get the length of the string
-    unsigned long userMessageLength = strlen(userString);
+    int userMessageLength = strlen(userString);
 
     // get the frequency of each letter in the message
-    for (unsigned long i = 0; i < userMessageLength; i++)
+    for (int i = 0; i < userMessageLength; i++)
     {
         if (isalpha(userString[i]))
         {
             letterFrequency[tolower(userString[i]) - 'a']++;
         }
     }
-
     // iterate until we have the 5 most frequent letters
     for (int i = 0; i < 5; i++)
     {
