@@ -239,5 +239,5 @@ SnazzyExtraCreditProgram:
         mov rsi, extraCred
         mov rdx, extraCredLen
         call print
-        call game
+        call extraGame
         jmp main
