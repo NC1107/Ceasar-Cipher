@@ -3,39 +3,12 @@
 #include <malloc.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
 
-// get distances between two letters
-int getDistance(char letter1, char letter2)
-{
-    int distance = letter2 - letter1;
-    if (distance < 0)
-    {
-        distance += 26;
-    }
-    return distance;
-}
-// shift the letters in the string by the given distance
-void stringShifter(char *string, int distance)
-{
-    printf("stringShifter");
-    for (int i = 0; i < strlen(string); i++)
-    {
-        string[i] = tolower(string[i]);
-        if (isalpha(string[i]))
-        {
-            string[i] = string[i] + distance;
-            // check if the letter is out of bounds
-            if (string[i] > 'z')
-            {
-                string[i] = string[i] - 26;
-            }
-            if (string[i] < 'a')
-            {
-                string[i] = string[i] + 26;
-            }
-        }
-    }
-}
+typedef unsigned char uint8_t;
+
+#define STDIN 0
+#define MAX_STRING_SIZE 1000
 
 // printout all string values from array of strings
 void displayUserMessages(char *userMessages[])
@@ -47,34 +20,51 @@ void displayUserMessages(char *userMessages[])
 }
 
 // get user input and store it in one of the arrays of strings
-void readUserMessage(char *userMessages[], int insertionLocation)
+void readUserMessage(char **userMessages, uint8_t insertionLocation)
 {
-    char Ending_Symbols[3] = {'.', '!', '?'};
-    char *userString[10000];
-    printf("Enter a new message: ");
-    scanf("%s", *userString);
-
-    // get the length of the string
-    int userMessageLength = strlen(*userString);
-
-    // check if the messages first letter is uppercase
-    if (!isupper(*userString[0]))
+    unsigned char readSuccess = 0;
+    char userString[MAX_STRING_SIZE];
+    int stringSize;
+    while (!readSuccess)
     {
-        printf("First letter is not uppercase, Try again.\n");
-        return;
+        printf("Enter a new message:\n");
+        //scanf("%s", userString); // <- Awful function, the worst
+        stringSize = read(STDIN, userString, MAX_STRING_SIZE);
+        // check that read ran properly
+        // read must not take up the entire buffer, needs room for null-terminator
+        if (stringSize < 2  || stringSize == MAX_STRING_SIZE)
+        {
+            printf("Read failed. String is either too small or too large\n");
+            continue;
+        }
+        // add null-terminator
+        userString[stringSize] = 0;
+        // check if the ending character (before the newline) is valid
+        char lastChar = userString[stringSize-2];
+        if (lastChar != '!' && lastChar != '?' && lastChar != '.')
+        {
+            printf("Invalid ending character, Try again.\n");
+            continue;
+        }
+        // check if the messages first letter is uppercase
+        if (!isupper(userString[0]))
+        {
+            printf("First letter is not uppercase, Try again.\n");
+            continue;
+        }
+
+        // the message is valid!
+        readSuccess = 1;
+        // kindof like a deep copy, move each char from buffer into 2D array
+        int i = 0;
+        while (1)
+        {
+            userMessages[insertionLocation][i] = userString[i];
+            // stop after the null terminator
+            if (!userString[i]) return;
+            i = i + 1;
+        }
     }
-    // check if the ending character is valid
-    else if (!strchr(Ending_Symbols, *userString[userMessageLength - 1]))
-    {
-        printf("Invalid ending character, Try again.\n");
-        return;
-    }
-    // the message is valid, place it in the given index
-    // free the previously stored message
-    free(userMessages[insertionLocation]);
-    // allocate memory for the new message in the sizeof chars
-    userMessages[insertionLocation] = malloc(sizeof(char) * (userMessageLength + 1));
-    userMessages[insertionLocation] = *userString;
 }
 
 // use malloc to resize given char* array
@@ -89,7 +79,6 @@ char *resizeArray(char *array[], int newSize)
     return newArray;
 }
 
-// does not store changes, just prints out the changes
 // does not store changes, just prints out the changes
 void decryptString(char *userMessages[])
 {
